@@ -3,4 +3,5 @@ build.log
 build
 npm-debug.log
 tmp
-.map
+.map.settings
+.settings
