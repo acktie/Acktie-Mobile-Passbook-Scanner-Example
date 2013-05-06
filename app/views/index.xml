@@ -1,0 +1,5 @@
+<Alloy>
+	<Window class="container">
+		<Button id="scan" onClick="clickme">Click Me</Button>
+	</Window>
+</Alloy>
