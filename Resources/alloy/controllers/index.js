@@ -1,7 +1,7 @@
 function Controller() {
     function clickme() {
         function success(result) {
-            alert(result.data);
+            alert(JSON.stringify(result));
         }
         function cancel() {
             window.close({
@@ -9,31 +9,37 @@ function Controller() {
             });
         }
         function cancel() {
-            "iphone" === Ti.Platform.osname ? window.close({
+            if ("iphone" === Ti.Platform.osname) window.close({
                 animated: true
-            }) : "ipad" === Ti.Platform.osname && popover.hide();
+            }); else if ("ipad" === Ti.Platform.osname) popover.hide(); else if ("android" === Ti.Platform.osname) {
+                scanner.stop();
+                scanner.hide();
+                window.remove(scanner);
+            }
         }
         var window = void 0;
         var scanner = void 0;
         var rightButton = Ti.UI.createButton({
+            bottom: 5,
+            left: 5,
             title: "close"
         });
         rightButton.addEventListener("click", function() {
             scanner.stop();
         });
         var scanningOptions = {
-            width: Ti.UI.FILL,
-            height: Ti.UI.FILL,
+            width: "100%",
+            height: "90%",
             enableQR: false,
             enableAztec: false,
             scanInterval: 3,
+            scanPortrait: false,
             success: success,
             cancel: cancel
         };
-        if ("iphone" === Ti.Platform.osname) {
+        if ("iphone" === Ti.Platform.osname || "android" === Ti.Platform.osname) {
             scanner = passbookScanner.createScannerView(scanningOptions);
             window = Ti.UI.createWindow({
-                modal: true,
                 barColor: "65412a",
                 barImage: "foody-navbar.png",
                 backgroundColor: "#fff"
@@ -48,6 +54,7 @@ function Controller() {
                 Ti.API.info("Switch value: " + lightSwitch.value);
             });
             scanner.add(lightSwitch);
+            "android" === Ti.Platform.osname && scanner.add(rightButton);
             window.add(scanner);
             window.rightNavButton = rightButton;
             window.open({
@@ -69,8 +76,10 @@ function Controller() {
         }
     }
     require("alloy/controllers/BaseController").apply(this, Array.prototype.slice.call(arguments));
+    this.__controllerPath = "index";
     arguments[0] ? arguments[0]["__parentSymbol"] : null;
     arguments[0] ? arguments[0]["$model"] : null;
+    arguments[0] ? arguments[0]["__itemTemplate"] : null;
     var $ = this;
     var exports = {};
     var __defers = {};
@@ -88,7 +97,8 @@ function Controller() {
     clickme ? $.__views.scan.addEventListener("click", clickme) : __defers["$.__views.scan!click!clickme"] = true;
     exports.destroy = function() {};
     _.extend($, $.__views);
-    var passbookScanner = require("com.acktie.mobile.ios.passbook.scanner");
+    var passbookScanner = void 0;
+    passbookScanner = "iphone" === Ti.Platform.osname || "ipad" === Ti.Platform.osname ? require("com.acktie.mobile.ios.passbook.scanner") : require("com.acktie.mobile.android.passbook.scanner");
     $.index.open();
     __defers["$.__views.scan!click!clickme"] && $.__views.scan.addEventListener("click", clickme);
     _.extend($, exports);

@@ -1,9 +1,20 @@
-var passbookScanner = require("com.acktie.mobile.ios.passbook.scanner");
+var passbookScanner = undefined;
+if (Ti.Platform.osname === 'iphone' ||  Ti.Platform.osname === 'ipad') 
+{
+	passbookScanner = require("com.acktie.mobile.ios.passbook.scanner");
+}
+else
+{
+	passbookScanner = require("com.acktie.mobile.android.passbook.scanner");
+}
+
 function clickme() {
 	var window = undefined;
 	var scanner = undefined;
 
 	var rightButton = Ti.UI.createButton({
+		bottom : 5,
+		left : 5,
 		title : 'close',
 	});
 
@@ -12,7 +23,7 @@ function clickme() {
 	});
 
 	function success(result) {
-		alert(result.data);
+		alert(JSON.stringify(result));
 	}
 
 	function cancel() {
@@ -22,20 +33,20 @@ function clickme() {
 	}
 
 	var scanningOptions = {
-		width : Ti.UI.FILL,
-		height : Ti.UI.FILL,
+		width : '100%',
+		height : '90%',
 		enableQR : false,
 		enableAztec : false,
 		scanInterval : 3.0,
+		scanPortrait: false, // Only used on Android.  Default is landscape
 		success : success,
 		cancel : cancel
 	};
 
-	if (Ti.Platform.osname === 'iphone') {
+	if (Ti.Platform.osname === 'iphone' || Ti.Platform.osname === 'android') {
 		scanner = passbookScanner.createScannerView(scanningOptions);
 		
 		window = Ti.UI.createWindow({
-			modal : true,
 			barColor : '65412a',
 			barImage : 'foody-navbar.png',
 			backgroundColor : "#fff"
@@ -58,6 +69,12 @@ function clickme() {
 		});
 
 		scanner.add(lightSwitch);
+		
+		// If android add the close button
+		if(Ti.Platform.osname === 'android')
+		{
+			scanner.add(rightButton);
+		}
 		
 		window.add(scanner);
 		window.rightNavButton = rightButton;
@@ -90,6 +107,10 @@ function clickme() {
 			});
 		} else if (Ti.Platform.osname === 'ipad') {
 			popover.hide();
+		} else if(Ti.Platform.osname === 'android') {
+			scanner.stop();
+			scanner.hide();
+			window.remove(scanner);
 		}
 	}
 
